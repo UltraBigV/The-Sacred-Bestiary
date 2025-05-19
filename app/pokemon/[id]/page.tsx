@@ -18,17 +18,16 @@ export function generateStaticParams() {
 
 // Using server component for data fetching
 export default async function PokemonDetailPage({ 
-  params 
+  params, 
+  searchParams
 }: { 
-  params: Promise<{ id: string }> // Type params as a Promise
+  params: { id: string }; // No longer a Promise here, Next.js resolves it
+  searchParams?: { [key: string]: string | string[] | undefined };
 }) {
   try {
-    // Await the params Promise to get the resolved parameters
-    const resolvedParams = await params;
-    
-    // Server-side data fetching
-    const id = parseInt(resolvedParams.id); // Use resolvedParams.id
-    
+    const id = parseInt(params.id);
+    const contextualType = typeof searchParams?.contextualType === 'string' ? searchParams.contextualType : undefined;
+
     if (isNaN(id)) {
       notFound();
     }
@@ -66,7 +65,9 @@ export default async function PokemonDetailPage({
     };
     
     // Get primary type and its color
-    const primaryTypeStyle = getTypeStyling(pokemon.types[0]);
+    // Use contextualType if available, otherwise default to the first type of the Pokemon
+    const displayType = contextualType || pokemon.types[0];
+    const displayTypeStyle = getTypeStyling(displayType);
     
     return (
       <div className="container mx-auto py-6">
@@ -77,8 +78,8 @@ export default async function PokemonDetailPage({
           </Button>
         </Link>
         
-        <Card className={`border-t-8 ${primaryTypeStyle.border} shadow-xl`}>
-          <CardHeader className={`${primaryTypeStyle.bg} bg-opacity-20`}>
+        <Card className={`border-t-8 ${displayTypeStyle.border} shadow-xl`}>
+          <CardHeader className={`${displayTypeStyle.bg} bg-opacity-20`}>
             <div className="flex justify-between items-center">
               <CardTitle className="text-3xl capitalize">
                 {pokemon.name} <span className="text-gray-400 ml-2">#{pokemon.id.toString().padStart(3, '0')}</span>

@@ -10,13 +10,15 @@ interface PokemonCardProps {
   name: string;
   types: string[];
   image: string;
+  contextualType?: string; // Add new optional prop
 }
 
 export const PokemonCard = ({
   id,
   name,
   types,
-  image
+  image,
+  contextualType // Destructure new prop
 }: PokemonCardProps) => {
   const formattedId = String(id).padStart(3, '0');
   
@@ -48,8 +50,11 @@ export const PokemonCard = ({
   // Get primary type color
   const primaryTypeColor = getTypeColor(types[0].toLowerCase());
 
+  // Construct the link href, adding contextualType if available
+  const linkHref = contextualType ? `/pokemon/${id}?contextualType=${contextualType}` : `/pokemon/${id}`;
+
   return (
-    <Link href={`/pokemon/${id}`}>
+    <Link href={linkHref}>
       <div className="flex flex-col h-full overflow-hidden rounded-lg border border-indigo-700/30 bg-indigo-950/50 backdrop-blur-sm shadow-lg hover:shadow-indigo-500/20 transition-all hover:-translate-y-1 group">
         <div className={`${primaryTypeColor} bg-opacity-30 p-2 flex justify-between items-center border-b border-indigo-700/30`}>
           <span className="text-xs font-semibold text-blue-100">#{formattedId}</span>

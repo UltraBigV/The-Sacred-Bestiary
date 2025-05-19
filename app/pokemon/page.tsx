@@ -61,6 +61,7 @@ export default async function PokemonListPage() {
                       name={p.name}
                       types={[type]} // Using the current type from parent map
                       image={p.image}
+                      contextualType={type} // Pass the current type group as contextualType
                     />
                   </div>
                 ))}

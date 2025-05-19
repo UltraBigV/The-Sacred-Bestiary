@@ -21,51 +21,36 @@ interface PokeBallCatchModalProps {
 }
 
 export const PokeBallCatchModal = ({ pokemon, isOpen, onClose }: PokeBallCatchModalProps) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
-  
-  // Handle proper close sequence
-  const handleClose = () => {
-    console.log("Modal - Starting close sequence");
-    setIsClosing(true);
-    setShowDetails(false);
-    
-    // Wait for animations to complete before triggering parent's onClose
-    setTimeout(() => {
-      onClose();
-      // Reset our internal state after parent handles close
-      setTimeout(() => {
-        setIsVisible(false);
-        setIsClosing(false);
-      }, 100);
-    }, 300);
-  };
-  
+  const [isVisible, setIsVisible] = useState(false); // Controls if the modal is in the DOM and animating
+  const [showDetails, setShowDetails] = useState(false); // Controls if "Gotcha" content is shown vs "Appeared"
+
   useEffect(() => {
     if (isOpen) {
-      setIsVisible(true);
-      setIsClosing(false);
-      // Add a small delay before showing the Pokémon details for a dramatic reveal
-      const timer = setTimeout(() => {
-        if (!isClosing) {
-          setShowDetails(true);
-        }
-      }, 1500);
-      return () => clearTimeout(timer);
+      setIsVisible(true); // Make modal visible to start entry animation
+      setShowDetails(false); // Initially show "A wild Pokémon appeared!"
+      const revealTimer = setTimeout(() => {
+        setShowDetails(true); // After a delay, show "Gotcha!" details
+      }, 1500); // Delay for the "Gotcha!" reveal
+      return () => clearTimeout(revealTimer);
     } else {
-      // Only handle close if not already in closing state
-      if (!isClosing) {
-        setShowDetails(false);
-        const timer = setTimeout(() => {
-          setIsVisible(false);
-        }, 300);
-        return () => clearTimeout(timer);
-      }
+      // When isOpen becomes false, the modal starts animating out (due to CSS on the main div).
+      // We need to set isVisible to false *after* this animation completes.
+      // showDetails should remain true during the fade-out to keep "Gotcha!" content.
+      const hideTimer = setTimeout(() => {
+        setIsVisible(false); // Fully hide/remove from DOM after animation
+      }, 500); // This duration should match the CSS animation duration (e.g., duration-500)
+      return () => clearTimeout(hideTimer);
     }
-  }, [isOpen, isClosing]);
+  }, [isOpen]);
 
-  if (!isVisible) return null;
+  const handleCloseButtonClick = () => {
+    onClose(); // Trigger parent's onClose, which will set isOpen to false
+  };
+
+  // Render nothing if the modal is not supposed to be visible (either initially or after closing)
+  if (!isVisible) {
+    return null;
+  }
   
   // Handle color mapping for Pokemon types
   const getTypeColor = (type: string) => {
@@ -101,7 +86,7 @@ export const PokeBallCatchModal = ({ pokemon, isOpen, onClose }: PokeBallCatchMo
         }`}
       >        {/* Close button */}
         <button 
-          onClick={handleClose}
+          onClick={handleCloseButtonClick}
           className="absolute top-2 right-2 text-gray-300 hover:text-white focus:outline-none"
         >
           <X className="h-5 w-5" />
@@ -144,7 +129,7 @@ export const PokeBallCatchModal = ({ pokemon, isOpen, onClose }: PokeBallCatchMo
               <div className="text-center">                <p className="text-green-400 font-semibold mb-4">
                   {pokemon.name} was added to your Bestiary!
                 </p>
-                <Button onClick={handleClose} className="w-full">
+                <Button onClick={handleCloseButtonClick} className="w-full">
                   Close
                 </Button>
               </div>

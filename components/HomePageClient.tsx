@@ -163,11 +163,11 @@ export default function HomePageClient() {
           pokemon={catchStatus.pokemon}
           isOpen={showCatchModal}
           onClose={() => {
-            // First hide the modal UI
+            // First hide the modal UI by setting isOpen to false in parent state
             setShowCatchModal(false);
             
-            // Important: Add a small delay before resetting the catch status
-            // This prevents animation retriggering during the modal close animation
+            // Important: Delay resetting catch status to match modal animation duration
+            // This prevents content flicker in the modal as it closes.
             setTimeout(() => {
               // Completely reset all animation and data state
               setCatchStatus({
@@ -176,8 +176,8 @@ export default function HomePageClient() {
                 error: undefined,
                 pokemon: undefined
               });
-              console.log("Animation and catch state completely reset");
-            }, 300); // Small delay to ensure modal closes first
+              console.log("Animation and catch state completely reset after modal close");
+            }, 500); // Adjusted to 500ms to match modal animation
           }}
         />
       )}
